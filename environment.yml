@@ -1,0 +1,14 @@
+# Chnage project name. We recommend you to match this name to the name of the GitHub repository
+name: python_template  
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10  # Change python version if necessary
+  - pip
+  # Place your conda dependencies here
+  - pip:
+    # Place your pip dependencies in requirements.txt
+    - -r requirements.txt
+    - -r requirements-dev.txt
