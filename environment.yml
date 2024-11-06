@@ -1,5 +1,5 @@
 # Chnage project name. We recommend you to match this name to the name of the GitHub repository
-name: python_template  
+name: RecoMan
 channels:
   - conda-forge
   - defaults
@@ -7,6 +7,10 @@ channels:
 dependencies:
   - python=3.10  # Change python version if necessary
   - pip
+  - requests=2.32.3
+  - pandas=2.2.2
+  - tqdm=4.66.5
+  - pillow=10.4.0
   # Place your conda dependencies here
   - pip:
     # Place your pip dependencies in requirements.txt
