@@ -36,7 +36,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     movie_db = MovieDB("/home/limjk/Datasets/MovieLens20M/movie_posters.sqlite")
-    fastapi_app = FastAPIApp(movie_db)
+    fastapi_app = FastAPIApp(movie_db, rating_path="res/ratings.json")
     app.include_router(fastapi_app.router)
     return app
 
