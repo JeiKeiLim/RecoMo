@@ -4,6 +4,7 @@
 - Contact: limjk@jmarple.ai
 """
 
+import numpy as np
 import sqlite3
 from typing import Optional, Tuple
 
@@ -72,13 +73,25 @@ class MovieDB:
             self.connect()
 
         self._cursor.execute(
-            "SELECT movie_id, movie_name, poster_data FROM movie_posters ORDER BY RANDOM() LIMIT 1"
+            "SELECT movie_id FROM movie_posters"
         )
-        result = self._cursor.fetchone()
+        movie_ids = self._cursor.fetchall()
+        random_idx = np.random.choice(len(movie_ids))
+        movie_id = movie_ids[random_idx][0]
 
+        result = self.get_movie_poster(movie_id)
         if result:
-            return result[0], result[1], result[2]
+            return movie_id, result[0], result[1]
         return None
+
+        # self._cursor.execute(
+        #     "SELECT movie_id, movie_name, poster_data FROM movie_posters ORDER BY RANDOM() LIMIT 1"
+        # )
+        # result = self._cursor.fetchone()
+
+        # if result:
+        #     return result[0], result[1], result[2]
+        # return None
 
 
 if __name__ == "__main__":

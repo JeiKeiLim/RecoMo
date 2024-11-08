@@ -13,6 +13,10 @@ dependencies:
   - pillow=10.4.0
   - fastapi 0.112.2
   - uvicorn=0.20.0
+  - pytorch=2.5.1
+  - pytorch-cuda=12.4
+  - torchvision
+  - torchaudio
   # Place your conda dependencies here
   - pip:
     # Place your pip dependencies in requirements.txt

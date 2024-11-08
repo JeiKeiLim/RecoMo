@@ -6,8 +6,47 @@
 }
 
 .App-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 1rem;
-  margin-bottom: 2rem;
+  color: white;
+}
+
+.hamburger-menu {
+  position: absolute;
+  left: 20px;
+  z-index: 1000;
+}
+
+.menu-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: white;
+  padding: 8px;
+}
+
+.menu-items {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  min-width: 200px;
+}
+
+.menu-items button {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
 }
 
 .movie-grid {
@@ -20,7 +59,7 @@
 .movie-card {
   background-color: #2a2a2a;
   border-radius: 8px;
-  overflow: hidden;
+  /* overflow: hidden; */
   transition: transform 0.2s;
 }
 
@@ -60,8 +99,20 @@
 
 .rating {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rating-row {
+  display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.rating-label {
+  font-size: 0.9em;
+  min-width: 70px;
+  text-align: right;
 }
 
 .stars {
@@ -72,25 +123,24 @@
 .star {
   background: none;
   border: none;
-  padding: 0;
-  font-size: 20px;
   cursor: pointer;
-  color: #555;
-  transition: color 0.2s;
+  padding: 0 2px;
+  font-size: 1.2em;
+  color: gold;
 }
 
-.star:hover {
-  color: #ffd700;
-}
-
-.star.active {
-  color: #ffd700;
+.rating-row.predicted .star {
+  cursor: default;
+  color: #ffd700aa; /* slightly transparent gold */
 }
 
 .rating-value {
-  font-size: 0.9rem;
-  color: #ffd700;
   min-width: 32px;
+  font-size: 0.9em;
+}
+
+.predicted {
+  opacity: 0.8;
 }
 
 /* Responsive adjustments */
@@ -103,4 +153,164 @@
   .movie-poster {
     height: 225px;
   }
+}
+
+.ratings-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.predicted-rating {
+  font-size: 0.9em;
+  color: #666;
+}
+
+/* Sidebar Menu */
+.sidebar-menu {
+  position: fixed;
+  left: -250px;
+  top: 0;
+  width: 250px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.sidebar-menu.open {
+  transform: translateX(250px);
+}
+
+/* Menu Items */
+.menu-items {
+  padding: 20px 0;
+}
+
+.menu-items button {
+  display: block;
+  width: 100%;
+  padding: 15px 35px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  color:#AAA;
+}
+
+.menu-items button:hover {
+  background-color: #151515;
+  color: #CCC;
+}
+
+.menu-items button.active {
+  background-color: #101010;
+  color: #FFF;
+}
+
+/* Main Content */
+.main-content {
+  transition: transform 0.3s ease-in-out;
+  min-height: 100vh;
+}
+
+.main-content.shifted {
+  transform: translateX(250px);
+}
+
+/* Menu Button */
+.menu-button {
+  position: absolute;
+  left: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 10px;
+}
+
+/* Overlay */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+}
+
+/* Ensure the movie grid scrolls properly */
+.movie-grid {
+  padding: 20px;
+}
+
+.recommendations-container {
+  padding: 10px;
+}
+
+.rated-movies-container {
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.rated-movies-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.rated-movies-table th,
+.rated-movies-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #999;
+}
+
+.rated-movies-table th {
+  background-color: #252525;
+  font-weight: bold;
+}
+
+.rated-movies-table .thumbnail {
+  width: 50px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.rated-movies-table tr:hover {
+  background-color: #393939;
+}
+
+.rated-movies-table td .rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rated-movies-table td .stars {
+  display: flex;
+  gap: 2px;
+}
+
+.rated-movies-table td .star {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0 2px;
+  color: #ccc;
+}
+
+.rated-movies-table td .star.active {
+  color: gold;
+}
+
+.rated-movies-table td .predicted .star {
+  cursor: default;
+}
+
+.rated-movies-table td .rating-value {
+  min-width: 32px;
 }

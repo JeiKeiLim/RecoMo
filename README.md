@@ -1,5 +1,28 @@
-# Python project template
-This repository is base project template for python
+# RecoMan
+This project is a hands-on project focused on building and experimenting with recommendation systems for movie recommendation.
+
+# Architecture
+
+```mermaid
+
+graph TD
+    A[FrontEnd React] --> B[Backend FastAPI]
+    B ---> A
+    C[Recommendation Backend FastAPI] --> B
+    B --> C
+
+    D[Matrix Factorization] --> C
+    E[AutoEncoder] --> C
+    F[Collaborative Filtering] --> C
+
+    G[Model Training] --> D
+    G --> E
+    G --> F
+
+    H[Data Preprocessing] --> G
+
+```
+
 
 # Features
 ## Continuous Integration (CI)
