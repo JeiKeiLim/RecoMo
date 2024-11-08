@@ -20,6 +20,9 @@ from scripts.recommender_systems.trainer.dataset_loader import MovieLens20MDatas
 from scripts.recommender_systems.trainer.train_pytorch_matrix_factorization import (
     TorchMatrixFactorizationModel,
 )
+from scripts.recommender_systems.trainer.train_pytorch_autoencoder import (
+    TorchAutoEncoderModel,
+)
 
 
 class FastAPIApp:
@@ -51,18 +54,24 @@ class FastAPIApp:
             self.ratings = {}
 
         dataset_path = "~/Datasets/MovieLens20M/rating.csv"
-        self.model_path = "res/models/matrix_factorization_model.pth"
+        # self.model_path = "res/models/matrix_factorization_model.pth"
+        self.model_path = "res/models/autoencoder_model.pth"
         self.dataset = MovieLens20MDatasetLoader(dataset_path, subset_ratio=1.0)
 
-        if self.ratings:
-            self.dataset.inject_user_row(self.ratings, increase_user_id=True)
+        # if self.ratings:
+        #     self.dataset.inject_user_row(self.ratings, increase_user_id=True)
 
         global_item_bias = np.mean(self.dataset.data["rating"].values)  # type: ignore
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = TorchMatrixFactorizationModel(
-            self.dataset.user_ids.shape[0] + (0 if self.ratings else 1),
+        device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        # self.model = TorchMatrixFactorizationModel(
+        #     self.dataset.user_ids.shape[0] + (0 if self.ratings else 1),
+        #     self.dataset.item_ids.shape[0],
+        #     10,
+        #     global_item_bias,
+        # ).to(device)
+        self.model = TorchAutoEncoderModel(
             self.dataset.item_ids.shape[0],
-            10,
+            512,
             global_item_bias,
         ).to(device)
 
@@ -72,9 +81,10 @@ class FastAPIApp:
             )
             print(f"Model loaded from {self.model_path}")
 
-        self.predictions = self.model.train_and_predict(
-            self.dataset, epochs=10, lr=100.0, save_path=self.model_path
-        )
+        self.predictions = self.model.predict(self.ratings, idx_map=self.dataset.item_id_map)
+        # self.predictions = self.model.train_and_predict(
+        #     self.dataset, epochs=10, lr=100.0, save_path=self.model_path
+        # )
         self.sorted_predictions = sorted(
             self.predictions.items(), key=lambda x: x[1], reverse=True
         )
@@ -87,15 +97,20 @@ class FastAPIApp:
     async def get_random_movie(self, query_data: Dict) -> Dict:
         best_movie_ids = [
             (int(movie_id), rating)
-            for movie_id, rating in self.sorted_predictions[:100]
+            for movie_id, rating in self.sorted_predictions[:1000]
         ]
         idx = np.random.choice(len(best_movie_ids))
         movie_id, predicted_rating = best_movie_ids[idx]
+
+        print(f"Chosen idx: {idx}, Movie ID: {movie_id}, Predicted rating: {predicted_rating}")
+
         predicted_rating = float(
             np.round(np.clip(predicted_rating, 0.5, 5.0) * 2) / 2.0
         )
 
         result = self.movie_db.get_movie_poster(movie_id)
+        # movie_id = -1
+        # result = None
 
         if not result:
             result = self.movie_db.get_random_movie()
@@ -175,9 +190,10 @@ class FastAPIApp:
             with open(self.rating_path, "w") as f:
                 f.write(json.dumps(self.ratings))
 
-        self.predictions = self.model.train_and_predict(
-            self.dataset, epochs=10, lr=100.0, save_path=self.model_path
-        )
+        self.predictions = self.model.predict(self.ratings, idx_map=self.dataset.item_id_map)
+        # self.predictions = self.model.train_and_predict(
+        #     self.dataset, epochs=10, lr=100.0, save_path=self.model_path
+        # )
         self.sorted_predictions = sorted(
             self.predictions.items(), key=lambda x: x[1], reverse=True
         )

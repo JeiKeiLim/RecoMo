@@ -11,7 +11,7 @@ function App() {
 
   const fetchRandomMovie = async () => {
     try {
-      const response = await fetch('http://localhost:7777/get_random_movie', {
+      const response = await fetch('http://192.168.1.23:7777/get_random_movie', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ function App() {
 
   const submitRating = async (movieId: number, rating: number) => {
     try {
-      const response = await fetch('http://localhost:7777/submit_rating', {
+      const response = await fetch('http://192.168.1.23:7777/submit_rating', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ function App() {
 
   const fetchMovie = async (movieId: number): Promise<Movie | null> => {
     try {
-      const response = await fetch('http://localhost:7777/get_movie', {
+      const response = await fetch('http://192.168.1.23:7777/get_movie', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ function App() {
 
   const loadRatedMovies = async () => {
     try {
-      const response = await fetch('http://localhost:7777/get_my_ratings', {
+      const response = await fetch('http://192.168.1.23:7777/get_my_ratings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -16,7 +16,7 @@ from tqdm import tqdm
 class MoviePosterGrabber:
     """Class to grab movie poster images from online sources."""
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None) -> None:
         """Initialize the MoviePosterGrabber.
 
         Args:
