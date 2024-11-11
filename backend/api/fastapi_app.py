@@ -15,12 +15,12 @@ from typing import Dict, Optional
 
 from fastapi import APIRouter, File, UploadFile
 
-from scripts.model.movie_db import MovieDB
-from scripts.recommender_systems.trainer.dataset_loader import MovieLens20MDatasetLoader
-from scripts.recommender_systems.trainer.train_pytorch_matrix_factorization import (
+from model.movie_db import MovieDB
+from recommender_systems.trainer.dataset_loader import MovieLens20MDatasetLoader
+from recommender_systems.trainer.train_pytorch_matrix_factorization import (
     TorchMatrixFactorizationModel,
 )
-from scripts.recommender_systems.trainer.train_pytorch_autoencoder import (
+from recommender_systems.trainer.train_pytorch_autoencoder import (
     TorchAutoEncoderModel,
 )
 
@@ -54,8 +54,8 @@ class FastAPIApp:
             self.ratings = {}
 
         dataset_path = "~/Datasets/MovieLens20M/rating.csv"
-        # self.model_path = "res/models/matrix_factorization_model.pth"
-        self.model_path = "res/models/autoencoder_model.pth"
+        # self.model_path = "../res/models/matrix_factorization_model.pth"
+        self.model_path = "../res/models/autoencoder_model.pth"
         self.dataset = MovieLens20MDatasetLoader(dataset_path, subset_ratio=1.0)
 
         # if self.ratings:

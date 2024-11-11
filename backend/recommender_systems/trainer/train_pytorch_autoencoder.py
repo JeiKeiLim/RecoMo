@@ -8,7 +8,7 @@ import torch.nn as nn
 
 from typing import Dict
 
-from scripts.recommender_systems.trainer.dataset_loader import (
+from recommender_systems.trainer.dataset_loader import (
     MovieLens20MDatasetLoader,
     MovieLens20MDataset,
 )
@@ -49,11 +49,11 @@ class TorchAutoEncoderModel(nn.Module):
 
 if __name__ == "__main__":
     path = "~/Datasets/MovieLens20M/rating.csv"
-    model_path = "res/models/matrix_factorization_model.pth"
+    model_path = "../res/models/matrix_factorization_model.pth"
 
     dataset = MovieLens20MDatasetLoader(path, subset_ratio=1.0)
 
-    with open("res/ratings.json", "r") as f:
+    with open("../res/ratings.json", "r") as f:
         user_ratings = json.load(f)
 
     user_ratings = {int(k): v for k, v in user_ratings.items()}
@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
             test_losses.append([loss.item()])
 
-    torch.save(model.state_dict(), "res/models/autoencoder_model.pth")
+    torch.save(model.state_dict(), "../res/models/autoencoder_model.pth")
 
     print(
         f"Final Test Loss: {np.mean(test_losses)}, RMSE: {np.sqrt(np.mean(test_losses))}"

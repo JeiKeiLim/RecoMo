@@ -20,7 +20,28 @@ graph TD
     G --> F
 
     H[Data Preprocessing] --> G
+```
 
+# How to run
+
+```shell
+git clone https://github.com/JeiKeiLim/RecoMan.git
+cd RecoMan
+
+# Install dependencies
+conda install -f environment.yml
+
+# Activate the environment
+conda activate RecoMan
+
+# Run the backend
+cd backend
+python backend_main.py
+
+# Run the frontend
+cd frontend
+npm install
+npm start
 ```
 
 
