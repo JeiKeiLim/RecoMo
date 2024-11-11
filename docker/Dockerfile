@@ -1,6 +1,6 @@
 FROM ubuntu:jammy
 
-LABEL maintainer="Jongkuk Lim <limjk@jmarple.ai>, Haneol Kim <hekim@jmarple.ai>"
+LABEL maintainer="Jongkuk Lim <lim.jeikei@gmail.com>"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Seoul
 

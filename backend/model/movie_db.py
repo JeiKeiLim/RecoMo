@@ -1,7 +1,7 @@
 """
 
 - Author: Jongkuk Lim
-- Contact: limjk@jmarple.ai
+- Contact: lim.jeikei@gmail.com
 """
 
 import numpy as np

@@ -3,7 +3,7 @@
 # Shell script for formating, linting and unit test
 #
 # - Author: Jongkuk Lim
-# - Contact: limjk@jmarple.ai
+# - Contact: lim.jeikei@gmail.com 
 
 # Bash 3 does not support hash dictionary.
 # hput and hget are alternative workaround.
