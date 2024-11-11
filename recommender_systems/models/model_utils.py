@@ -2,8 +2,12 @@ from typing import Dict
 
 import torch
 import torch.nn as nn
+
+import numpy as np
+
 from models.autoencoder import TorchAutoEncoderModel
 from models.matrix_factorization import TorchMatrixFactorizationModel
+from models.collaborative_filter import CollaborativeFilter
 from trainer.dataset_loader import MovieLens20MDatasetLoader
 
 
@@ -19,6 +23,17 @@ class ModelWrapper:
         """
         self.model = model
         self.dataset = MovieLens20MDatasetLoader(dataset_path, subset_ratio=1.0)
+        mean_rating = self.dataset.data["rating"].mean()
+        self.dataset.data["deviation"] = self.dataset.data["rating"] - mean_rating
+
+        self.rating_matrix = np.zeros(
+            (self.dataset.user_ids.shape[0], self.dataset.item_ids.shape[0]),
+            dtype=np.float32,
+        )
+        self.rating_matrix[
+            self.dataset.data["userId"].values, self.dataset.data["movieId"].values
+        ] = self.dataset.data["deviation"].values
+
         self.did_inject_user_row = False
 
     def _predict_matrix_factorization(self, data: Dict[int, float]) -> Dict[int, float]:
@@ -66,6 +81,24 @@ class ModelWrapper:
 
         return predictions
 
+    def _predict_collaborative_filter(self, data: Dict[int, float]) -> Dict[int, float]:
+        """Predict ratings using the collaborative filter model.
+
+        Args:
+            data: Dictionary of movie_id: rating pairs
+                {movie_id: rating, ...}
+
+        Returns:
+            Dictionary of movie_id: predicted_rating pairs
+                {movie_id: predicted_rating, ...}
+        """
+        if len(self.model.item_ids_map) == 0:
+            self.model.set_item_ids_map(self.dataset.item_id_map)
+
+        predictions = self.model.predict(data)
+
+        return predictions
+
     @torch.no_grad()
     def predict(self, data: Dict[int, float]) -> Dict[int, float]:
         """Predict ratings for the given data.
@@ -82,6 +115,10 @@ class ModelWrapper:
             return self._predict_matrix_factorization(data)
         elif isinstance(self.model, TorchAutoEncoderModel):
             return self._predict_autoencoder(data)
+        elif isinstance(self.model, CollaborativeFilter):
+            return self._predict_collaborative_filter(data)
+
+        return {}
 
 
 def model_loader(name: str, config: Dict, device: torch.device) -> nn.Module:
@@ -98,10 +135,16 @@ def model_loader(name: str, config: Dict, device: torch.device) -> nn.Module:
     model_dict = {
         "matrix_factorization": TorchMatrixFactorizationModel,
         "autoencoder": TorchAutoEncoderModel,
+        "collaborative_filter": CollaborativeFilter,
     }
 
     if name not in model_dict:
         raise ValueError(f"Model {name} not found in model_dict")
+
+    if name == "collaborative_filter":
+        model = model_dict[name](**dict(config["model"]))
+        model.load_weight(config["weight_path"])
+        return model
 
     model_weight = torch.load(
         config["weight_path"], weights_only=True, map_location=device

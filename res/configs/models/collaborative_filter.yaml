@@ -1,0 +1,7 @@
+collaborative_filter:
+  model:
+    mean_rating: 3.52552856
+    top_k: 30
+
+  weight_path: "../res/models/cf_weights.pkl"
+

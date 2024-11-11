@@ -8,7 +8,7 @@ backend:
 recommender_systems:
   host: localhost
   port: 8888
-  model: "matrix_factorization"
+  model: "autoencoder"
   device: "cuda:0"
 
 dataset:
@@ -21,4 +21,4 @@ defaults:
   - _self_
   - models/autoencoder
   - models/matrix_factorization
-
+  - models/collaborative_filter
