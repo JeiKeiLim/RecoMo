@@ -5,7 +5,6 @@
 """
 
 import os
-import tempfile
 
 import hydra
 import torch
@@ -14,10 +13,14 @@ from api.fastapi_app import FastAPIApp
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models.model_utils import model_loader
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 
 
-def create_app(config: DictConfig) -> FastAPI:
+def create_app() -> FastAPI:
+    """Create FastAPI app."""
+    with hydra.initialize(config_path=os.path.join("..", "res", "configs")):
+        config = hydra.compose(config_name="base_config")
+
     device = torch.device(
         config.recommender_systems.device if torch.cuda.is_available() else "cpu"
     )
@@ -40,14 +43,7 @@ def create_app(config: DictConfig) -> FastAPI:
     return app
 
 
-def get_application() -> FastAPI:
-    with hydra.initialize(config_path=os.path.join("..", "res", "configs")):
-        config = hydra.compose(config_name="base_config")
-
-    return create_app(config)
-
-
-app = get_application()
+app = create_app()
 
 
 @hydra.main(

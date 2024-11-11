@@ -9,15 +9,27 @@ import os
 from typing import Dict, Optional
 
 import torch.nn as nn
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter
 from models.model_utils import ModelWrapper
-from trainer.dataset_loader import MovieLens20MDatasetLoader
 
 
 class FastAPIApp:
+    """FastAPI application for Movie recommender system engine API."""
+
     UPLOAD_FILE_ROOT = "uploaded_files"
 
     def __init__(self, rating_path: Optional[str], model: nn.Module) -> None:
+        """Initialize FastAPI application.
+
+        Args:
+            rating_path: Path to the rating file.
+                Rating json file should have the following format:
+                {
+                    "movie_id": rating,
+                    ...
+                }
+            model: Model instance for the recommendation system
+        """
         self._router = APIRouter()
         self._router.add_api_route(
             "/post_rating", self.post_rating, methods=["POST", "OPTIONS"]
@@ -36,10 +48,27 @@ class FastAPIApp:
             self.ratings = {}
 
         dataset_path = "~/Datasets/MovieLens20M/rating.csv"
-        # self.dataset = MovieLens20MDatasetLoader(dataset_path, subset_ratio=1.0)
 
         self.model = ModelWrapper(model, dataset_path)
+
         self.predictions = self.model.predict(self.ratings)
+        """Prediction results from the engine API.
+
+        The prediction results are stored in the following format:
+        {
+            movie_id: prediction,
+            ...
+        }
+        """
+        self.sorted_predictions = []
+        """Sorted prediction results.
+
+        List[Tuple[movie_id(int), rating(float)]]
+        """
+        self._sort_predictions()
+
+    def _sort_predictions(self) -> None:
+        """Sort predictions by rating."""
         self.sorted_predictions = sorted(
             self.predictions.items(), key=lambda x: x[1], reverse=True
         )
@@ -50,7 +79,19 @@ class FastAPIApp:
         return self._router
 
     def post_rating(self, query_data: Dict) -> Dict:
-        """Post the rating of the movie."""
+        """Post the rating of the movie from backend API.
+
+        Args:
+            query_data: Query data from the request.
+            {
+                "movie_id": int,
+                "rating": float,
+            }
+
+        Returns:
+            Status of the request.
+            { "status": "success" } if successful, { "status": "failed", "message": str } otherwise
+        """
         movie_id = query_data.get("movie_id", None)
         rating = query_data.get("rating", None)
 
@@ -64,14 +105,31 @@ class FastAPIApp:
                 json.dump(self.ratings, f)
 
         self.predictions = self.model.predict(self.ratings)
-        self.sorted_predictions = sorted(
-            self.predictions.items(), key=lambda x: x[1], reverse=True
-        )
+        self._sort_predictions()
 
         return {"status": "success"}
 
     def get_prediction(self, query_data: Dict) -> Dict:
-        """Get the prediction of the movie."""
+        """Get the prediction of the movie.
+
+        Args:
+            query_data: Query data from the request.
+            {
+                "movie_id": int,
+            }
+
+        Returns:
+            Prediction results.
+            {
+                "success": bool,
+                "predictions": {
+                    movie_id: prediction,
+                    ...
+                }
+            }
+
+            if movie_id is negative, return all predictions.
+        """
         movie_id = query_data["movie_id"]
 
         if movie_id >= 0:

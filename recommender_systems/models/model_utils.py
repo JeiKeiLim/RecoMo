@@ -8,12 +8,30 @@ from trainer.dataset_loader import MovieLens20MDatasetLoader
 
 
 class ModelWrapper:
+    """Wrapper class for the model to predict ratings."""
+
     def __init__(self, model: nn.Module, dataset_path: str) -> None:
+        """Initialize the model wrapper.
+
+        Args:
+            model: Model instance for the recommendation system
+            dataset_path: Path to the dataset
+        """
         self.model = model
         self.dataset = MovieLens20MDatasetLoader(dataset_path, subset_ratio=1.0)
         self.did_inject_user_row = False
 
     def _predict_matrix_factorization(self, data: Dict[int, float]) -> Dict[int, float]:
+        """Predict ratings using the matrix factorization model.
+
+        Args:
+            data: Dictionary of movie_id: rating pairs
+                {movie_id: rating, ...}
+
+        Returns:
+            Dictionary of movie_id: predicted_rating pairs
+                {movie_id: predicted_rating, ...}
+        """
         self.dataset.inject_user_row(
             data, increase_user_id=not self.did_inject_user_row
         )
@@ -33,6 +51,16 @@ class ModelWrapper:
         }
 
     def _predict_autoencoder(self, data: Dict[int, float]) -> Dict[int, float]:
+        """Predict ratings using the autoencoder model.
+
+        Args:
+            data: Dictionary of movie_id: rating pairs
+                {movie_id: rating, ...}
+
+        Returns:
+            Dictionary of movie_id: predicted_rating pairs
+                {movie_id: predicted_rating, ...}
+        """
         idx_map = self.dataset.item_id_map
         predictions = self.model.predict(data, idx_map)
 
@@ -40,6 +68,16 @@ class ModelWrapper:
 
     @torch.no_grad()
     def predict(self, data: Dict[int, float]) -> Dict[int, float]:
+        """Predict ratings for the given data.
+
+        Args:
+            data: Dictionary of movie_id: rating pairs
+                {movie_id: rating, ...}
+
+        Returns:
+            Dictionary of movie_id: predicted_rating pairs
+                {movie_id: predicted_rating, ...}
+        """
         if isinstance(self.model, TorchMatrixFactorizationModel):
             return self._predict_matrix_factorization(data)
         elif isinstance(self.model, TorchAutoEncoderModel):
@@ -47,6 +85,16 @@ class ModelWrapper:
 
 
 def model_loader(name: str, config: Dict, device: torch.device) -> nn.Module:
+    """Load the model from the given configuration.
+
+    Args:
+        name: Name of the model to load (matrix_factorization, autoencoder)
+        config: Configuration for the model
+        device: Device to load the model
+
+    Returns:
+        Model instance
+    """
     model_dict = {
         "matrix_factorization": TorchMatrixFactorizationModel,
         "autoencoder": TorchAutoEncoderModel,

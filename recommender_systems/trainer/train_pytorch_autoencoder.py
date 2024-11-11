@@ -5,8 +5,7 @@ import torch
 import torch.nn as nn
 from models.autoencoder import TorchAutoEncoderModel
 from tqdm import tqdm
-from trainer.dataset_loader import (MovieLens20MDataset,
-                                    MovieLens20MDatasetLoader)
+from trainer.dataset_loader import MovieLens20MDataset, MovieLens20MDatasetLoader
 
 if __name__ == "__main__":
     path = "~/Datasets/MovieLens20M/rating.csv"
@@ -29,9 +28,6 @@ if __name__ == "__main__":
 
     device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
-    model = TorchAutoEncoderModel(dataset.item_ids.shape[0], 512).to(device)
-
-    # _, train_set = dataset.get_train_test_split(test_size=1.0, shuffle_set=True)
     train_set = MovieLens20MDataset(
         dataset.data.query(f"userId < {unique_test_user_ids[0]}")
     )
@@ -54,6 +50,10 @@ if __name__ == "__main__":
     mean_train_rating = torch.tensor(
         train_set.data["rating"].mean(), device=device, dtype=torch.float32
     )
+
+    model = TorchAutoEncoderModel(
+        dataset.item_ids.shape[0], 512, mean_train_rating.item()
+    ).to(device)
 
     optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=0.9)
     loss_fn = nn.MSELoss()

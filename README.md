@@ -34,6 +34,10 @@ conda install -f environment.yml
 # Activate the environment
 conda activate RecoMan
 
+# Run the recommender system engine
+cd recommendation_systems
+python recommendation_systems_main.py
+
 # Run the backend
 cd backend
 python backend_main.py

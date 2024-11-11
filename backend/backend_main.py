@@ -1,4 +1,4 @@
-"""Main script for your project.
+"""Backend API main module.
 
 - Author: Jongkuk Lim
 - Contact: lim.jeikei@gmail.com
@@ -17,24 +17,28 @@ from omegaconf import DictConfig, OmegaConf
 
 
 def save_hydra_config_to_tempfile(config: DictConfig) -> None:
+    """Save hydra config to temp file."""
     temp_file_path = os.path.join(tempfile.gettempdir(), "recoman_config.yaml")
     OmegaConf.save(config, temp_file_path)
 
 
 def load_temp_hydra_config() -> DictConfig:
+    """Load hydra config from temp file."""
     temp_file_path = os.path.join(tempfile.gettempdir(), "recoman_config.yaml")
     if os.path.exists(temp_file_path):
         return OmegaConf.load(temp_file_path)  # type: ignore
-    else:
-        return OmegaConf.load(os.path.join("..", "res", "configs", "base_config.yaml"))  # type: ignore
+
+    return OmegaConf.load(
+        os.path.join("..", "res", "configs", "base_config.yaml")
+    )  # type: ignore
 
 
 def create_app() -> FastAPI:
+    """Create FastAPI app."""
     config = load_temp_hydra_config()
-    print(config)
 
-    app = FastAPI()
-    app.add_middleware(
+    fastapi = FastAPI()
+    fastapi.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
         allow_credentials=True,
@@ -42,9 +46,9 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     movie_db = MovieDB(config.dataset.poster_db_path)
-    fastapi_app = FastAPIApp(movie_db, rating_path=config.data.my_rating_path)
-    app.include_router(fastapi_app.router)
-    return app
+    fastapi_app = FastAPIApp(movie_db, config.data.my_rating_path)
+    fastapi.include_router(fastapi_app.router)
+    return fastapi
 
 
 app = create_app()
@@ -56,6 +60,7 @@ app = create_app()
     config_name="base_config",
 )
 def main_app(config: DictConfig) -> None:
+    """Run FastAPI backend."""
     save_hydra_config_to_tempfile(config)
 
     uvicorn.run(
@@ -67,4 +72,4 @@ def main_app(config: DictConfig) -> None:
 
 
 if __name__ == "__main__":
-    main_app()
+    main_app()  # pylint: disable=no-value-for-parameter

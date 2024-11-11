@@ -5,7 +5,16 @@ import torch.nn as nn
 
 
 class TorchAutoEncoderModel(nn.Module):
+    """Autoencoder model for movie recommendation system."""
+
     def __init__(self, n_items: int, n_hidden: int, global_mean: float) -> None:
+        """Initialize the Autoencoder model.
+
+        Args:
+            n_items: Number of items in the dataset
+            n_hidden: Number of hidden units in the model
+            global_mean: Global mean of the ratings
+        """
         super().__init__()
         self.n_items = n_items
         self.layer1 = nn.Linear(n_items, n_hidden)
@@ -15,6 +24,16 @@ class TorchAutoEncoderModel(nn.Module):
         self.global_mean = global_mean
 
     def forward(self, x: torch.Tensor, is_train: bool = False) -> torch.Tensor:
+        """Forward pass of the model.
+
+        Args:
+            x: Input tensor of shape (batch_size, n_items)
+            is_train: Whether the model is in training mode
+                      If true, applies dropout
+
+        Returns:
+            Output tensor of shape (batch_size, n_items)
+        """
         if is_train:
             out = self.dropout(x)
         else:
@@ -30,6 +49,17 @@ class TorchAutoEncoderModel(nn.Module):
     def predict(
         self, data: Dict[int, float], idx_map: Dict[int, int]
     ) -> Dict[int, float]:
+        """Predict ratings for the given data.
+
+        Args:
+            data: Dictionary of movie_id: rating pairs
+                {movie_id: rating, ...}
+            idx_map: Mapping of movie_id to index in the model
+
+        Returns:
+            Dictionary of movie_id: predicted_rating pairs
+            {movie_id: predicted_rating, ...
+        """
         mat = torch.zeros((1, self.n_items), dtype=torch.float32).to(
             self.layer1.weight.device
         )

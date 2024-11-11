@@ -32,6 +32,12 @@ class TorchMatrixFactorizationModel(nn.Module):
         )
 
     def forward(self, user_ids: torch.Tensor, item_ids: torch.Tensor) -> torch.Tensor:
+        """Forward pass of the model.
+
+        Args:
+            user_ids: Tensor of user IDs (user_ids,)
+            item_ids: Tensor of item IDs (item_ids,)
+        """
         wu = torch.einsum("ij, ij -> i", self.W(user_ids), self.U(item_ids))
         return (
             self.bias_user[user_ids] + self.bias_item[item_ids] + self.global_mean + wu
@@ -40,7 +46,6 @@ class TorchMatrixFactorizationModel(nn.Module):
     def train_and_predict(
         self,
         dataset: MovieLens20MDatasetLoader,
-        # ratings: Dict[int, float],
         epochs: int = 500,
         lr: float = 100.0,
         save_path: str = "model.pth",
@@ -48,10 +53,15 @@ class TorchMatrixFactorizationModel(nn.Module):
         """Train the model on the given ratings and predict the missing ratings.
 
         Args:
-            dataset_path: Path to the dataset file
-            ratings: Dictionary containing the ratings for the user
+            dataset_path: dataset instance.
+            epochs: Number of epochs to train the model
+            lr: Learning rate for the optimizer
+            save_path: Path to save the model
+
+        Returns:
+            Dictionary of item_id: predicted_rating pairs
+            {item_id: predicted}
         """
-        # dataset.inject_user_row(ratings)
         _, train_set = dataset.get_train_test_split(test_size=1.0, shuffle_set=True)
         device = self.W.weight.device
 
@@ -90,10 +100,6 @@ class TorchMatrixFactorizationModel(nn.Module):
             )
 
             predictions = self(user_ids, item_ids).cpu().numpy()
-
-        # predictions = np.clip(predictions, 0.5, 5.0)
-        # Make predictions by 0.5 steps
-        # predictions = np.round(predictions * 2) / 2
 
         return {
             dataset.item_id_reverse_map[idx]: rating
