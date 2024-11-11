@@ -1,14 +1,9 @@
-import os
-import json
+from typing import Dict
 
 import torch
 import torch.nn as nn
-import numpy as np
-
 from tqdm import tqdm
-from typing import Dict
-
-from scripts.recommender_systems.trainer.dataset_loader import MovieLens20MDatasetLoader
+from trainer.dataset_loader import MovieLens20MDatasetLoader
 
 
 class TorchMatrixFactorizationModel(nn.Module):
@@ -37,6 +32,12 @@ class TorchMatrixFactorizationModel(nn.Module):
         )
 
     def forward(self, user_ids: torch.Tensor, item_ids: torch.Tensor) -> torch.Tensor:
+        """Forward pass of the model.
+
+        Args:
+            user_ids: Tensor of user IDs (user_ids,)
+            item_ids: Tensor of item IDs (item_ids,)
+        """
         wu = torch.einsum("ij, ij -> i", self.W(user_ids), self.U(item_ids))
         return (
             self.bias_user[user_ids] + self.bias_item[item_ids] + self.global_mean + wu
@@ -45,7 +46,6 @@ class TorchMatrixFactorizationModel(nn.Module):
     def train_and_predict(
         self,
         dataset: MovieLens20MDatasetLoader,
-        # ratings: Dict[int, float],
         epochs: int = 500,
         lr: float = 100.0,
         save_path: str = "model.pth",
@@ -53,15 +53,24 @@ class TorchMatrixFactorizationModel(nn.Module):
         """Train the model on the given ratings and predict the missing ratings.
 
         Args:
-            dataset_path: Path to the dataset file
-            ratings: Dictionary containing the ratings for the user
+            dataset_path: dataset instance.
+            epochs: Number of epochs to train the model
+            lr: Learning rate for the optimizer
+            save_path: Path to save the model
+
+        Returns:
+            Dictionary of item_id: predicted_rating pairs
+            {item_id: predicted}
         """
-        # dataset.inject_user_row(ratings)
         _, train_set = dataset.get_train_test_split(test_size=1.0, shuffle_set=True)
         device = self.W.weight.device
 
-        train_user_ids = torch.tensor(train_set.data["userId"].values, device=device, dtype=torch.long)
-        train_item_ids = torch.tensor(train_set.data["movieId"].values, device=device, dtype=torch.long)
+        train_user_ids = torch.tensor(
+            train_set.data["userId"].values, device=device, dtype=torch.long
+        )
+        train_item_ids = torch.tensor(
+            train_set.data["movieId"].values, device=device, dtype=torch.long
+        )
         train_ratings = torch.tensor(
             train_set.data["rating"].values, device=device, dtype=torch.float32
         )
@@ -92,55 +101,7 @@ class TorchMatrixFactorizationModel(nn.Module):
 
             predictions = self(user_ids, item_ids).cpu().numpy()
 
-        # predictions = np.clip(predictions, 0.5, 5.0)
-        # Make predictions by 0.5 steps
-        # predictions = np.round(predictions * 2) / 2
-
         return {
             dataset.item_id_reverse_map[idx]: rating
             for idx, rating in zip(dataset.item_ids, predictions)
         }
-
-
-if __name__ == "__main__":
-    path = "~/Datasets/MovieLens20M/rating.csv"
-    model_path = "res/models/matrix_factorization_model.pth"
-
-    dataset = MovieLens20MDatasetLoader(path, subset_ratio=1.0)
-
-    with open("res/ratings.json", "r") as f:
-        user_ratings = json.load(f)
-
-    user_ratings = {int(k): v for k, v in user_ratings.items()}
-
-    K = 10
-    EPOCHS = 500
-    LR = 100.0
-
-    global_item_bias = np.mean(dataset.data["rating"].values)  # type: ignore
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    model = TorchMatrixFactorizationModel(
-        dataset.user_ids.shape[0] + 1, dataset.item_ids.shape[0], K, global_item_bias
-    ).to(device)
-
-    if os.path.exists(model_path):
-        model.load_state_dict(
-            torch.load(model_path, map_location=device, weights_only=True)
-        )
-        print("Model loaded from model.pth")
-
-    predictions = model.train_and_predict(
-        dataset, user_ratings, epochs=EPOCHS, lr=LR, save_path=model_path
-    )
-    rmse = np.sqrt(
-        np.mean(
-            [
-                (rating - predictions[item_id]) ** 2
-                for item_id, rating in user_ratings.items()
-            ]
-        )
-    )
-
-    print(f"RMSE: {rmse}")

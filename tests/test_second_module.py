@@ -1,10 +1,10 @@
 """Unit testing for second_module/second_module.py.
 
 - Author: Jongkuk Lim
-- Contact: limjk@jmarple.ai
+- Contact: lim.jeikei@gmail.com
 """
 
-from scripts.second_module.second_module import demo_generate_world
+from second_module.second_module import demo_generate_world
 
 
 def test_demo_generate_world() -> None:

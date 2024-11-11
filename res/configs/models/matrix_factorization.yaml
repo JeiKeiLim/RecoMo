@@ -1,0 +1,10 @@
+matrix_factorization:
+  model:
+    k: 10
+    global_mean: 3.52552856
+
+  weight_path: "../res/models/matrix_factorization_model.pth"
+
+  train:
+    epochs: 500
+    lr: 100.0

@@ -1,59 +1,19 @@
 import json
 
 import numpy as np
-
-from tqdm import tqdm
 import torch
 import torch.nn as nn
-
-from typing import Dict
-
-from scripts.recommender_systems.trainer.dataset_loader import (
-    MovieLens20MDatasetLoader,
-    MovieLens20MDataset,
-)
-
-
-class TorchAutoEncoderModel(nn.Module):
-    def __init__(self, n_items: int, n_hidden: int, global_mean: float) -> None:
-        super().__init__()
-        self.n_items = n_items
-        self.layer1 = nn.Linear(n_items, n_hidden)
-        self.activation = nn.Tanh()
-        self.layer2 = nn.Linear(n_hidden, n_items)
-        self.dropout = nn.Dropout(0.7)
-        self.global_mean = global_mean
-
-    def forward(self, x: torch.Tensor, is_train: bool = False) -> torch.Tensor:
-        if is_train:
-            out = self.dropout(x)
-        else:
-            out = x
-
-        out = self.layer1(out)
-        out = self.activation(out)
-        out = self.layer2(out)
-
-        return out
-
-    @torch.no_grad()
-    def predict(self, data: Dict[int, float], idx_map: Dict[int, int]) -> Dict[int, float]:
-        mat = torch.zeros((1, self.n_items), dtype=torch.float32).to(self.layer1.weight.device)
-        for item_id, rating in data.items():
-            mat[0, idx_map[item_id]] = rating - self.global_mean
-
-        prediction = self(mat, is_train=False) + self.global_mean
-        reverse_idx_map = {v: k for k, v in idx_map.items()}
-        return {reverse_idx_map[i]: prediction[0, i].item() for i in range(self.n_items)}
-
+from models.autoencoder import TorchAutoEncoderModel
+from tqdm import tqdm
+from trainer.dataset_loader import MovieLens20MDataset, MovieLens20MDatasetLoader
 
 if __name__ == "__main__":
     path = "~/Datasets/MovieLens20M/rating.csv"
-    model_path = "res/models/matrix_factorization_model.pth"
+    model_path = "../res/models/matrix_factorization_model.pth"
 
     dataset = MovieLens20MDatasetLoader(path, subset_ratio=1.0)
 
-    with open("res/ratings.json", "r") as f:
+    with open("../res/ratings.json", "r") as f:
         user_ratings = json.load(f)
 
     user_ratings = {int(k): v for k, v in user_ratings.items()}
@@ -68,9 +28,6 @@ if __name__ == "__main__":
 
     device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
-    model = TorchAutoEncoderModel(dataset.item_ids.shape[0], 512).to(device)
-
-    # _, train_set = dataset.get_train_test_split(test_size=1.0, shuffle_set=True)
     train_set = MovieLens20MDataset(
         dataset.data.query(f"userId < {unique_test_user_ids[0]}")
     )
@@ -93,6 +50,10 @@ if __name__ == "__main__":
     mean_train_rating = torch.tensor(
         train_set.data["rating"].mean(), device=device, dtype=torch.float32
     )
+
+    model = TorchAutoEncoderModel(
+        dataset.item_ids.shape[0], 512, mean_train_rating.item()
+    ).to(device)
 
     optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=0.9)
     loss_fn = nn.MSELoss()
@@ -145,7 +106,7 @@ if __name__ == "__main__":
 
             test_losses.append([loss.item()])
 
-    torch.save(model.state_dict(), "res/models/autoencoder_model.pth")
+    torch.save(model.state_dict(), "../res/models/autoencoder_model.pth")
 
     print(
         f"Final Test Loss: {np.mean(test_losses)}, RMSE: {np.sqrt(np.mean(test_losses))}"

@@ -3,11 +3,11 @@
 # Docker build image, run container, execute last container.
 #
 # - Author: Jongkuk Lim
-# - Contact: limjk@jmarple.ai
+# - Contact: lim.jeikei@gmail.com
 
 xhost +
 
-ORG=jmarpledev
+ORG=jeikeilim
 
 PRJ_NAME=${PWD##*/}
 PRJ_NAME="$(tr [A-Z] [a-z] <<< "$PRJ_NAME")"

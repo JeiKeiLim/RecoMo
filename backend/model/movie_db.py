@@ -1,12 +1,13 @@
 """
 
 - Author: Jongkuk Lim
-- Contact: limjk@jmarple.ai
+- Contact: lim.jeikei@gmail.com
 """
 
-import numpy as np
 import sqlite3
 from typing import Optional, Tuple
+
+import numpy as np
 
 
 class MovieDB:
@@ -28,6 +29,7 @@ class MovieDB:
         self.db_path = db_path
         self._conn = None
         self._cursor = None
+        self._movie_ids = []
 
     def connect(self) -> None:
         """Establish database connection."""
@@ -72,26 +74,17 @@ class MovieDB:
         if not self._conn:
             self.connect()
 
-        self._cursor.execute(
-            "SELECT movie_id FROM movie_posters"
-        )
-        movie_ids = self._cursor.fetchall()
-        random_idx = np.random.choice(len(movie_ids))
-        movie_id = movie_ids[random_idx][0]
+        if not self._movie_ids:
+            self._cursor.execute("SELECT movie_id FROM movie_posters")
+            self._movie_ids = self._cursor.fetchall()
+
+        random_idx = np.random.choice(len(self._movie_ids))
+        movie_id = self._movie_ids[random_idx][0]
 
         result = self.get_movie_poster(movie_id)
         if result:
             return movie_id, result[0], result[1]
         return None
-
-        # self._cursor.execute(
-        #     "SELECT movie_id, movie_name, poster_data FROM movie_posters ORDER BY RANDOM() LIMIT 1"
-        # )
-        # result = self._cursor.fetchone()
-
-        # if result:
-        #     return result[0], result[1], result[2]
-        # return None
 
 
 if __name__ == "__main__":

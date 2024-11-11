@@ -1,7 +1,7 @@
-import pandas as pd
-import numpy as np
+from typing import Dict, List, Tuple, Union
 
-from typing import Tuple, Union, List, Dict
+import numpy as np
+import pandas as pd
 
 
 class MovieLens20MDatasetLoader:
@@ -43,7 +43,9 @@ class MovieLens20MDatasetLoader:
         self.user_ids = np.array(self.data["userId"].unique())
         self.item_ids = np.array(self.data["movieId"].unique())
 
-    def inject_user_row(self, ratings: Dict[int, float], increase_user_id: bool = False) -> None:
+    def inject_user_row(
+        self, ratings: Dict[int, float], increase_user_id: bool = False
+    ) -> None:
         """Inject a new user row into the dataset.
 
         Args:

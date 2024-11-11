@@ -1,0 +1,11 @@
+autoencoder:
+  model:
+    n_hidden: 512
+    global_mean: 3.52552856
+
+  weight_path: "../res/models/autoencoder_model.pth"
+
+  train:
+    epochs: 100
+    lr: 0.1
+    batch_size: 10240

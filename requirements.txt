@@ -1,1 +1,2 @@
 # Place your pip dependencies here
+hydra-core==1.3.2
