@@ -7,15 +7,13 @@
 import os
 import tempfile
 
-import uvicorn
 import hydra
-
+import uvicorn
+from api.fastapi_app import FastAPIApp
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from omegaconf import DictConfig, OmegaConf
-
-from api.fastapi_app import FastAPIApp
 from model.movie_db import MovieDB
+from omegaconf import DictConfig, OmegaConf
 
 
 def save_hydra_config_to_tempfile(config: DictConfig) -> None:
@@ -33,6 +31,7 @@ def load_temp_hydra_config() -> DictConfig:
 
 def create_app() -> FastAPI:
     config = load_temp_hydra_config()
+    print(config)
 
     app = FastAPI()
     app.add_middleware(
