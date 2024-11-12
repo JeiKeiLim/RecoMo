@@ -152,9 +152,25 @@ function App() {
   }, [currentPage]);
 
   const renderMyRatings = () => {
+    // Calculate MSE and RMSE
+    const ratedMoviesWithPredictions = ratedMovies.filter(
+      movie => myRatings[movie.id] && predictedRatings[movie.id]
+    );
+    
+    const mse = ratedMoviesWithPredictions.reduce((sum, movie) => {
+      const diff = myRatings[movie.id] - predictedRatings[movie.id];
+      return sum + (diff * diff);
+    }, 0) / (ratedMoviesWithPredictions.length || 1);
+
+    const rmse = Math.sqrt(mse);
+
     return (
       <div className="rated-movies-container">
         <h1>My Ratings</h1>
+        <div className="metrics">
+          <p><strong>MSE:</strong> {mse.toFixed(4)}</p>
+          <p><strong>RMSE:</strong> {rmse.toFixed(4)}</p>
+        </div>
         <table className="rated-movies-table">
           <thead>
             <tr>

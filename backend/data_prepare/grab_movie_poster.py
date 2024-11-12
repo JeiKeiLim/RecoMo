@@ -13,6 +13,27 @@ import requests
 from tqdm import tqdm
 
 
+class RateLimiter:
+    """Handles rate limiting with dynamic backoff."""
+    
+    def __init__(self, initial_wait: float = 3.0, min_wait: float = 3.0, max_wait: float = 10.0):
+        self.wait_time = initial_wait
+        self.min_wait = min_wait
+        self.max_wait = max_wait
+
+    def success(self) -> None:
+        """Decrease wait time after successful request."""
+        self.wait_time = max(self.min_wait, self.wait_time - 0.5)
+
+    def failure(self) -> None:
+        """Increase wait time after timeout/failure."""
+        self.wait_time = min(self.max_wait, self.wait_time + 1.0)
+
+    def wait(self) -> None:
+        """Wait for the current timeout period."""
+        time.sleep(self.wait_time)
+
+
 class MoviePosterGrabber:
     """Class to grab movie poster images from online sources."""
 
@@ -95,14 +116,91 @@ class MoviePosterGrabber:
 
         return True, False
 
+    def get_movie_details(self, movie_name: str) -> Tuple[Optional[str], Optional[str], bool]:
+        """Get the poster URL and description for a given movie name.
+
+        Args:
+            movie_name: Name of the movie to search for
+
+        Returns:
+            Tuple of (URL of the movie poster if found, movie description if found, whether timeout occurred)
+            URL and description will be None if not found or error occurred
+        """
+        search_url = f"{self.base_url}/search/movie"
+        params = {"api_key": self.api_key, "query": movie_name}
+        try:
+            response = requests.get(search_url, params=params, timeout=5)
+        except requests.exceptions.Timeout:
+            return None, None, True
+        except OSError:
+            return None, None, False
+
+        if response.status_code != 200:
+            return None, None, False
+
+        results = response.json().get("results", [])
+        if not results:
+            return None, None, False
+
+        first_result = results[0]
+        poster_path = first_result.get("poster_path")
+        description = first_result.get("overview")
+
+        poster_url = f"{self.image_base_url}{poster_path}" if poster_path else None
+        return poster_url, description, False
+
+    def download_poster_and_description(
+        self, movie_name: str, poster_path: str, description_path: str
+    ) -> Tuple[bool, bool, bool]:
+        """Download the movie poster and description and save them to specified paths.
+
+        Args:
+            movie_name: Name of the movie
+            poster_path: Path where the poster should be saved
+            description_path: Path where the description should be saved
+
+        Returns:
+            Tuple of (poster success, description success, whether timeout occurred)
+        """
+        poster_url, description, timeout = self.get_movie_details(movie_name)
+        if timeout:
+            return False, False, True
+
+        poster_success = False
+        description_success = False
+
+        if poster_url:
+            try:
+                response = requests.get(poster_url, timeout=5)
+                if response.status_code == 200:
+                    with open(poster_path, "wb") as file:
+                        file.write(response.content)
+                    poster_success = True
+            except (requests.exceptions.Timeout, OSError):
+                pass
+
+        if description:
+            try:
+                with open(description_path, "w", encoding="utf-8") as file:
+                    file.write(description)
+                description_success = True
+            except OSError:
+                pass
+
+        return poster_success, description_success, timeout
+
 
 if __name__ == "__main__":
     data = pd.read_csv("~/Datasets/MovieLens20M/movie.csv")
     movie_poster_grabber = MoviePosterGrabber()
     ROOT_DIR = "/home/limjk/Datasets/MovieLens20M/posters"
-    wait_time = 3.0
+    rate_limiter = RateLimiter()
 
-    for _, row in tqdm(data.iterrows(), total=data.shape[0], desc="Grabbing posters"):
+    # Create descriptions directory if it doesn't exist
+    descriptions_dir = os.path.join(ROOT_DIR, "descriptions")
+    os.makedirs(descriptions_dir, exist_ok=True)
+
+    for _, row in tqdm(data.iterrows(), total=data.shape[0], desc="Grabbing movie data"):
         movie_id, title = row["movieId"], row["title"]
         # Remove year from title using regex (e.g., "Movie Title (1999)" -> "Movie Title")
         title = re.sub(r"\s*\(\d{4}\)\s*$", "", title)
@@ -115,18 +213,39 @@ if __name__ == "__main__":
         striped_movie_name = striped_movie_name.replace("__", "_")
         striped_movie_name = striped_movie_name.strip()
 
-        file_name = f"{movie_id}_{striped_movie_name}.jpg"
-        save_path = os.path.join(ROOT_DIR, file_name)  # type: ignore
+        poster_filename = f"{movie_id}_{striped_movie_name}.jpg"
+        description_filename = f"{movie_id}_{striped_movie_name}.txt"
+        
+        poster_path = os.path.join(ROOT_DIR, poster_filename)
+        description_path = os.path.join(descriptions_dir, description_filename)
 
-        # Check if file exists and has non-zero size
-        if os.path.exists(save_path) and os.path.getsize(save_path) > 0:
+        # Skip if description exists and has content
+        if os.path.exists(description_path) and os.path.getsize(description_path) > 0:
             continue
 
-        success, timeout = movie_poster_grabber.download_poster(title, save_path)
+        # Only get description if poster already exists
+        if os.path.exists(poster_path) and os.path.getsize(poster_path) > 0:
+            _, description, timeout = movie_poster_grabber.get_movie_details(title)
+            if timeout:
+                rate_limiter.failure()
+                rate_limiter.wait()
+                continue
 
-        if success:
-            wait_time = max(3.0, wait_time - 0.5)
-        elif timeout:
-            wait_time = min(10.0, wait_time + 1.0)
+            if description:
+                try:
+                    with open(description_path, "w", encoding="utf-8") as file:
+                        file.write(description)
+                    rate_limiter.success()
+                except OSError:
+                    pass
+        else:
+            poster_success, desc_success, timeout = movie_poster_grabber.download_poster_and_description(
+                title, poster_path, description_path
+            )
 
-        time.sleep(wait_time)
+            if poster_success or desc_success:
+                rate_limiter.success()
+            elif timeout:
+                rate_limiter.failure()
+
+        rate_limiter.wait()

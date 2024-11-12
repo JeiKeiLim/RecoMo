@@ -125,7 +125,8 @@ def model_loader(name: str, config: Dict, device: torch.device) -> nn.Module:
     """Load the model from the given configuration.
 
     Args:
-        name: Name of the model to load (matrix_factorization, autoencoder)
+        name: Name of the model to load
+        (matrix_factorization, autoencoder, collaborative_filter)
         config: Configuration for the model
         device: Device to load the model
 

@@ -314,3 +314,17 @@
 .rated-movies-table td .rating-value {
   min-width: 32px;
 }
+
+.metrics {
+  margin: 20px 0;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.metrics p {
+  margin: 0;
+  padding: 10px 20px;
+  background: #252525;
+  border-radius: 5px;
+}

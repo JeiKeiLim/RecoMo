@@ -25,7 +25,8 @@ def init_db(db_path: str) -> None:
         CREATE TABLE IF NOT EXISTS movie_posters (
             movie_id INTEGER PRIMARY KEY,
             movie_name TEXT NOT NULL,
-            poster_data BLOB NOT NULL
+            poster_data BLOB NOT NULL,
+            description TEXT
         )
     """
     )
@@ -35,15 +36,16 @@ def init_db(db_path: str) -> None:
 
 
 def store_poster(
-    db_path: str, movie_id: int, movie_name: str, poster_path: Path
+    db_path: str, movie_id: int, movie_name: str, poster_path: Path, desc_path: Path
 ) -> bool:
-    """Store a single poster image in the database.
+    """Store a single poster image and description in the database.
 
     Args:
         db_path: Path to SQLite database file
         movie_id: ID of the movie
         movie_name: Name of the movie
         poster_path: Path to the poster image file
+        desc_path: Path to the description file
 
     Returns:
         True if successful, False otherwise
@@ -52,19 +54,28 @@ def store_poster(
         with open(poster_path, "rb") as f:
             poster_data = f.read()
 
+        # Try to read description if it exists
+        description = None
+        if desc_path.exists():
+            with open(desc_path, "r", encoding="utf-8") as f:
+                description = f.read().strip()
+
         conn = sqlite3.connect(db_path)
         c = conn.cursor()
 
         c.execute(
-            "INSERT OR REPLACE INTO movie_posters (movie_id, movie_name, poster_data) VALUES (?, ?, ?)",
-            (movie_id, movie_name, poster_data),
+            """INSERT OR REPLACE INTO movie_posters 
+               (movie_id, movie_name, poster_data, description) 
+               VALUES (?, ?, ?, ?)""",
+            (movie_id, movie_name, poster_data, description),
         )
 
         conn.commit()
         conn.close()
         return True
 
-    except Exception:
+    except Exception as e:
+        print(f"Error processing {poster_path}: {e}")
         return False
 
 
@@ -80,6 +91,7 @@ def process_posters(posters_dir: str, db_path: str) -> None:
 
     # Get list of all jpg files
     poster_files = list(Path(posters_dir).glob("*.jpg"))
+    desc_dir = Path(posters_dir) / "descriptions"
 
     for poster_path in tqdm(poster_files, desc="Storing posters"):
         # Extract movie ID and name from filename
@@ -89,7 +101,10 @@ def process_posters(posters_dir: str, db_path: str) -> None:
             filename.split("_")[1:]
         )  # Join remaining parts as movie name
 
-        store_poster(db_path, movie_id, movie_name, poster_path)
+        # Construct description file path
+        desc_path = desc_dir / f"{filename}.txt"
+
+        store_poster(db_path, movie_id, movie_name, poster_path, desc_path)
 
 
 if __name__ == "__main__":
@@ -103,9 +118,9 @@ if __name__ == "__main__":
 
     # Get random movie_id and name
     c.execute(
-        "SELECT movie_id, movie_name FROM movie_posters ORDER BY RANDOM() LIMIT 1"
+        "SELECT movie_id, movie_name, description FROM movie_posters ORDER BY RANDOM() LIMIT 1"
     )
-    movie_id, movie_name = c.fetchone()
+    movie_id, movie_name, description = c.fetchone()
 
     # Get poster data
     c.execute("SELECT poster_data FROM movie_posters WHERE movie_id = ?", (movie_id,))
@@ -120,3 +135,4 @@ if __name__ == "__main__":
     image = Image.open(io.BytesIO(poster_data))
     image.show()
     print(f"Displayed poster for movie: {movie_name} (ID: {movie_id})")
+    print(f"Description: {description}")
