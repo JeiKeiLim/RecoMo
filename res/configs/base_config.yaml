@@ -15,7 +15,7 @@ dataset:
   poster_db_path: "/home/limjk/Datasets/MovieLens20M/movie_posters.sqlite"
 
 data:
-  my_rating_path: "/home/limjk/GitHub/JeiKeiLim/RecoMan/res/ratings.json"
+  my_rating_path: "/home/limjk/GitHub/JeiKeiLim/RecoMo/res/ratings.json"
 
 defaults:
   - _self_

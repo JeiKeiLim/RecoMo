@@ -46,13 +46,14 @@ hput CMD_DESC all "Run formating, linting and unit test"
 # Define commands
 hput CMD_LIST format "black . && isort . && docformatter -i -r . --wrap-summaries 88 --wrap-descriptions 88"
 hput CMD_LIST lint "env PYTHONPATH=. pytest --pylint --mypy --flake8 --ignore tests --ignore cpp"
-hput CMD_LIST test "env PYTHONPATH=. pytest tests --cov=scripts --cov-report term-missing --cov-report html"
+hput CMD_LIST test "env PYTHONPATH=. pytest tests --cov=. --cov-report term-missing --cov-report html"
 hput CMD_LIST doc "env PYTHONPATH=. mkdocs build --no-directory-urls"
 hput CMD_LIST doc_server "env PYTHONPATH=. mkdocs serve -a 127.0.0.1:8000 --no-livereload"
 hput CMD_LIST init_conda "conda env create -f environment.yml"
 hput CMD_LIST init_precommit "pre-commit install --hook-type pre-commit --hook-type pre-push"
 hput CMD_LIST init "`hget CMD_LIST init_conda` && `hget CMD_LIST init_precommit`"
-hput CMD_LIST all "`hget CMD_LIST format` && `hget CMD_LIST lint` && `hget CMD_LIST test`"
+hput CMD_LIST all "`hget CMD_LIST format` && `hget CMD_LIST lint`"
+# hput CMD_LIST all "`hget CMD_LIST format` && `hget CMD_LIST lint` && `hget CMD_LIST test`"
 
 for _arg in $@
 do

@@ -9,22 +9,23 @@ import tempfile
 
 import hydra
 import uvicorn
-from api.fastapi_app import FastAPIApp
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from model.movie_db import MovieDB
 from omegaconf import DictConfig, OmegaConf
+
+from api.fastapi_app import FastAPIApp
+from model.movie_db import MovieDB
 
 
 def save_hydra_config_to_tempfile(config: DictConfig) -> None:
     """Save hydra config to temp file."""
-    temp_file_path = os.path.join(tempfile.gettempdir(), "recoman_config.yaml")
+    temp_file_path = os.path.join(tempfile.gettempdir(), "recomo_config.yaml")
     OmegaConf.save(config, temp_file_path)
 
 
 def load_temp_hydra_config() -> DictConfig:
     """Load hydra config from temp file."""
-    temp_file_path = os.path.join(tempfile.gettempdir(), "recoman_config.yaml")
+    temp_file_path = os.path.join(tempfile.gettempdir(), "recomo_config.yaml")
     if os.path.exists(temp_file_path):
         return OmegaConf.load(temp_file_path)  # type: ignore
 
@@ -46,8 +47,8 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     movie_db = MovieDB(config.dataset.poster_db_path)
-    fastapi_app = FastAPIApp(movie_db, config.data.my_rating_path)
-    fastapi.include_router(fastapi_app.router)
+    fastapi_application = FastAPIApp(movie_db, config.data.my_rating_path)
+    fastapi.include_router(fastapi_application.router)
     return fastapi
 
 

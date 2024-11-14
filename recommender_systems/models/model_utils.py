@@ -1,17 +1,21 @@
+"""Utility functions for the model.
+
+Author: Jongkuk Lim
+Contact: lim.jeikei@gmail.com
+"""
 from typing import Dict
 
-import torch
-import torch.nn as nn
-
 import numpy as np
+import torch
+from torch import nn
 
 from models.autoencoder import TorchAutoEncoderModel
-from models.matrix_factorization import TorchMatrixFactorizationModel
 from models.collaborative_filter import CollaborativeFilter
+from models.matrix_factorization import TorchMatrixFactorizationModel
 from trainer.dataset_loader import MovieLens20MDatasetLoader
 
 
-class ModelWrapper:
+class ModelWrapper:  # pylint: disable=too-few-public-methods
     """Wrapper class for the model to predict ratings."""
 
     def __init__(self, model: nn.Module, dataset_path: str) -> None:
@@ -26,7 +30,7 @@ class ModelWrapper:
         mean_rating = self.dataset.data["rating"].mean()
         self.dataset.data["deviation"] = self.dataset.data["rating"] - mean_rating
 
-        self.rating_matrix = np.zeros(
+        self.rating_matrix: np.ndarray = np.zeros(
             (self.dataset.user_ids.shape[0], self.dataset.item_ids.shape[0]),
             dtype=np.float32,
         )
@@ -113,9 +117,11 @@ class ModelWrapper:
         """
         if isinstance(self.model, TorchMatrixFactorizationModel):
             return self._predict_matrix_factorization(data)
-        elif isinstance(self.model, TorchAutoEncoderModel):
+
+        if isinstance(self.model, TorchAutoEncoderModel):
             return self._predict_autoencoder(data)
-        elif isinstance(self.model, CollaborativeFilter):
+
+        if isinstance(self.model, CollaborativeFilter):
             return self._predict_collaborative_filter(data)
 
         return {}

@@ -1,7 +1,12 @@
+"""Autoencoder model for movie recommendation system.
+
+Author: Jongkuk Lim
+Contact: lim.jeikei@gmail.com
+"""
 from typing import Dict
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class TorchAutoEncoderModel(nn.Module):

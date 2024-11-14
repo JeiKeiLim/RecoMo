@@ -7,11 +7,12 @@
 import base64
 import json
 import os
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import requests
 from fastapi import APIRouter
+
 from model.movie_db import MovieDB
 
 
@@ -49,20 +50,20 @@ class FastAPIApp:
         self.movie_db = movie_db
 
         if rating_path and os.path.exists(rating_path):
-            with open(rating_path, "r", encoding="utf-8") as fp:
-                self.ratings = json.load(fp)
+            with open(rating_path, "r", encoding="utf-8") as f:
+                self.ratings = json.load(f)
 
             self.ratings = {int(k): v for k, v in self.ratings.items()}
         else:
             self.ratings = {}
 
-        self.predictions = {}
+        self.predictions: Dict[int, float] = {}
         """Prediction results from the engine API.
         {
             movie_id(int): rating(float),
         }
         """
-        self.sorted_predictions = []
+        self.sorted_predictions: List[Tuple[int, float]] = []
         """Sorted prediction results.
 
         List[Tuple[movie_id(int), rating(float)]]
@@ -107,10 +108,13 @@ class FastAPIApp:
             endpoint: Endpoint to post.
             data: Data to post.
         """
-        response = requests.post(f"{self.ENGINE_API_URL}/{endpoint}", json=data)
+        response = requests.post(  # pylint: disable=missing-timeout
+            f"{self.ENGINE_API_URL}/{endpoint}",
+            json=data,
+        )
         return response.json()
 
-    async def get_random_movie(self, query_data: Dict) -> Dict:
+    async def get_random_movie(self, _: Dict) -> Dict:
         """Get random movie.
 
         Args:
@@ -125,6 +129,8 @@ class FastAPIApp:
                 "poster": poster_image (base64(str)),
             }
         """
+        predicted_rating: Optional[float]
+
         best_movie_ids = [
             (int(movie_id), rating)
             for movie_id, rating in self.sorted_predictions[:1000]
@@ -140,12 +146,12 @@ class FastAPIApp:
         result = self.movie_db.get_movie_poster(movie_id)
 
         if not result:
-            result = self.movie_db.get_random_movie()
+            result_random = self.movie_db.get_random_movie()
 
-            if not result:
+            if not result_random:
                 return {"error": "No movie found"}
 
-            movie_id, name, img = result
+            movie_id, name, img = result_random
             predicted_rating = None
         else:
             name, img = result
@@ -202,7 +208,7 @@ class FastAPIApp:
             "poster": img_b64,
         }
 
-    async def get_my_ratings(self, query_data: Dict) -> Dict:
+    async def get_my_ratings(self, _: Dict) -> Dict:
         """Get list of my ratings.
 
         Args:
@@ -225,7 +231,7 @@ class FastAPIApp:
 
         for movie_id in predictions.keys():
             if predictions[movie_id] is not None:
-                predictions[movie_id] = self._clip_rating(predictions[movie_id])
+                predictions[movie_id] = self._clip_rating(predictions[movie_id])  # type: ignore
 
         return {
             "ratings": self.ratings,

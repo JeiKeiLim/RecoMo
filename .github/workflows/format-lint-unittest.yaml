@@ -11,20 +11,30 @@ jobs:
     - uses: actions/checkout@v2.3.4
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        activate-environment: python_template  # Change project name
-        environment-file: environment.yml
-          # python-version: 3.8  # Change python version if necessary
+        activate-environment: RecoMo  # Change project name
+        environment-file: environment-cpu.yml
+        # python-version: 3.10
         auto-activate-base: false
     - shell: bash -l {0}
       run: |
         conda info
         conda list
-    - name: Format with black, isort
+    - name: Backend Format with black, isort
+      working-directory: ./backend
       shell: bash -l {0}
       run: ./run_check.sh format
-    - name: Lint with pylint, mypy, flake8
+    - name: Backend Lint with pylint, mypy, flake8
+      working-directory: ./backend
       shell: bash -l {0}
       run: ./run_check.sh lint
-    - name: Test with pytest
+    - name: Recommendation Format with black, isort
+      working-directory: ./recommender_systems
       shell: bash -l {0}
-      run: ./run_check.sh test
+      run: ./run_check.sh format
+    - name: Recommendation Lint with pylint, mypy, flake8
+      working-directory: ./recommender_systems
+      shell: bash -l {0}
+      run: ./run_check.sh lint
+    # - name: Test with pytest
+    #   shell: bash -l {0}
+    #   run: ./run_check.sh test

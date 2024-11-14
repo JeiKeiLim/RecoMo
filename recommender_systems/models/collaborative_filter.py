@@ -1,14 +1,17 @@
+"""Collaborative filtering model for movie recommendation system.
+
+Author: Jongkuk Lim
+Contact: lim.jeikei@gmail.com
+"""
 import json
-
 import os
-import numpy as np
+import pickle
+from typing import Dict, List, Tuple
 
-from typing import Dict, List
+import numpy as np
 from tqdm import tqdm
 
 from trainer.dataset_loader import MovieLens20MDatasetLoader
-
-import pickle
 
 
 class CollaborativeFilter:
@@ -30,9 +33,9 @@ class CollaborativeFilter:
         """
         self.mean_rating = mean_rating
         self.top_k = top_k
-        self.weights = {}
-        self.item_ids_map = {}
-        self.item_ids_reverse_map = {}
+        self.weights: Dict[Tuple[int, int], float] = {}
+        self.item_ids_map: Dict[int, int] = {}
+        self.item_ids_reverse_map: Dict[int, int] = {}
 
     def set_item_ids_map(self, item_ids_map: Dict[int, int]) -> None:
         """Set the item_ids map for the model.
@@ -108,28 +111,31 @@ class CollaborativeFilter:
 
         for item_id in ratings.keys():
             sorted_weights = []
-            for id in ratings.keys():
-                if id == item_id:
+            for cmp_id in ratings.keys():
+                if cmp_id == item_id:
                     continue
 
-                item_key = (self.item_ids_map[item_id], self.item_ids_map[id])
+                item_key = (self.item_ids_map[item_id], self.item_ids_map[cmp_id])
 
                 if item_key not in self.weights.keys():
                     continue
 
-                if (item_key[0], self.weights[item_key[::-1]]) in sorted_weights:
+                if (
+                    item_key[0],
+                    self.weights[(item_key[1], item_key[0])],
+                ) in sorted_weights:
                     continue
 
-                sorted_weights.append((id, self.weights[item_key]))
+                sorted_weights.append((cmp_id, self.weights[item_key]))
                 sorted_weights.sort(key=lambda x: x[1], reverse=True)
 
                 if len(sorted_weights) > self.top_k:
                     sorted_weights = sorted_weights[: self.top_k]
 
-            numerator = 0
-            sum_weights = sum([abs(weight) for _, weight in sorted_weights])
-            for id, weight in sorted_weights:
-                numerator += weight * (ratings[id] - self.mean_rating)
+            numerator = 0.0
+            sum_weights = sum(abs(weight) for _, weight in sorted_weights)
+            for cmp_id, weight in sorted_weights:
+                numerator += weight * (ratings[cmp_id] - self.mean_rating)
 
             if sum_weights == 0:
                 prediction = self.mean_rating
@@ -142,35 +148,35 @@ class CollaborativeFilter:
 
 
 if __name__ == "__main__":
-    path = "~/Datasets/MovieLens20M/rating.csv"
+    PATH = "~/Datasets/MovieLens20M/rating.csv"
 
-    dataset = MovieLens20MDatasetLoader(path, subset_ratio=1.0)
+    dataset = MovieLens20MDatasetLoader(PATH, subset_ratio=1.0)
 
-    with open("../res/ratings.json", "r") as f:
-        user_ratings = json.load(f)
+    with open("../res/ratings.json", "r", encoding="utf-8") as main_fp:
+        user_ratings = json.load(main_fp)
 
     user_ratings = {int(k): v for k, v in user_ratings.items()}
 
-    mean_rating = dataset.data["rating"].mean()
+    main_mean_rating = dataset.data["rating"].mean()
 
-    dataset.data["deviation"] = dataset.data["rating"] - mean_rating
+    dataset.data["deviation"] = dataset.data["rating"] - main_mean_rating
 
-    rating_matrix = np.zeros(
+    main_rating_matrix: np.ndarray = np.zeros(
         (dataset.user_ids.shape[0], dataset.item_ids.shape[0]), dtype=np.float32
     )
-    rating_matrix[
+    main_rating_matrix[
         dataset.data["userId"].values, dataset.data["movieId"].values
     ] = dataset.data["deviation"].values
 
-    model = CollaborativeFilter(float(mean_rating), 30)
+    model = CollaborativeFilter(float(main_mean_rating), 30)
     model.set_item_ids_map(dataset.item_id_map)
     model.load_weight("../res/models/cf_weights.pkl")
-    model.calculate_weights(list(user_ratings.keys()), rating_matrix)
+    model.calculate_weights(list(user_ratings.keys()), main_rating_matrix)
     model.save_weight("../res/models/cf_weights.pkl")
 
-    predictions = model.predict(user_ratings)
+    main_predictions = model.predict(user_ratings)
 
-    mse = sum([(predictions[k] - v) ** 2 for k, v in user_ratings.items()]) / len(
+    mse = sum((main_predictions[k] - v) ** 2 for k, v in user_ratings.items()) / len(
         user_ratings
     )
     print(f"MSE: {mse}, RMSE: {np.sqrt(mse)}")
