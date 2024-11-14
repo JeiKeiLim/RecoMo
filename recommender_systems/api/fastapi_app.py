@@ -3,13 +3,13 @@
 - Author: Jongkuk Lim
 - Contact: lim.jeikei@gmail.com
 """
-
 import json
 import os
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 
-import torch.nn as nn
 from fastapi import APIRouter
+from torch import nn
+
 from models.model_utils import ModelWrapper
 
 
@@ -40,7 +40,7 @@ class FastAPIApp:
         self.rating_path = rating_path
 
         if rating_path and os.path.exists(rating_path):
-            with open(rating_path, "r") as f:
+            with open(rating_path, "r", encoding="utf-8") as f:
                 self.ratings = json.load(f)
 
             self.ratings = {int(k): v for k, v in self.ratings.items()}
@@ -60,7 +60,7 @@ class FastAPIApp:
             ...
         }
         """
-        self.sorted_predictions = []
+        self.sorted_predictions: List[Tuple[int, float]] = []
         """Sorted prediction results.
 
         List[Tuple[movie_id(int), rating(float)]]
@@ -101,7 +101,7 @@ class FastAPIApp:
         self.ratings[movie_id] = rating
 
         if self.rating_path:
-            with open(self.rating_path, "w") as f:
+            with open(self.rating_path, "w", encoding="utf-8") as f:
                 json.dump(self.ratings, f)
 
         self.predictions = self.model.predict(self.ratings)

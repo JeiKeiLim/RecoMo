@@ -1,11 +1,11 @@
-"""
+"""Movie database class that handles SQLite operations for movie posters.
 
 - Author: Jongkuk Lim
 - Contact: lim.jeikei@gmail.com
 """
 
 import sqlite3
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -20,16 +20,16 @@ class MovieDB:
         - poster_data (BLOB): Binary image data of the movie poster
     """
 
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: str) -> None:
         """Initialize MovieDB with database path.
 
         Args:
             db_path: Path to SQLite database file
         """
         self.db_path = db_path
-        self._conn = None
-        self._cursor = None
-        self._movie_ids = []
+        self._conn: Optional[sqlite3.Connection] = None
+        self._cursor: Optional[sqlite3.Cursor] = None
+        self._movie_ids: List[Tuple[int]] = []
 
     def connect(self) -> None:
         """Establish database connection."""
@@ -55,6 +55,9 @@ class MovieDB:
         if not self._conn:
             self.connect()
 
+        if not self._cursor:
+            return None
+
         self._cursor.execute(
             "SELECT movie_name, poster_data FROM movie_posters WHERE movie_id = ?",
             (movie_id,),
@@ -74,6 +77,9 @@ class MovieDB:
         if not self._conn:
             self.connect()
 
+        if not self._cursor:
+            return None
+
         if not self._movie_ids:
             self._cursor.execute("SELECT movie_id FROM movie_posters")
             self._movie_ids = self._cursor.fetchall()
@@ -88,14 +94,14 @@ class MovieDB:
 
 
 if __name__ == "__main__":
-    db_path = "/home/limjk/Datasets/MovieLens20M/movie_posters.sqlite"
-    movie_db = MovieDB(db_path)
-    movie_db.connect()
+    MAIN_DB_PATH = "/home/limjk/Datasets/MovieLens20M/movie_posters.sqlite"
+    main_movie_db = MovieDB(MAIN_DB_PATH)
+    main_movie_db.connect()
 
     # Test by retrieving and displaying a random movie
-    result = movie_db.get_random_movie()
-    if result:
-        movie_id, movie_name, poster_data = result
+    main_result = main_movie_db.get_random_movie()
+    if main_result:
+        main_movie_id, movie_name, poster_data = main_result
 
         # Convert to image and display
         import io
@@ -104,6 +110,6 @@ if __name__ == "__main__":
 
         image = Image.open(io.BytesIO(poster_data))
         image.show()
-        print(f"Displayed poster for movie: {movie_name} (ID: {movie_id})")
+        print(f"Displayed poster for movie: {movie_name} (ID: {main_movie_id})")
 
-    movie_db.disconnect()
+    main_movie_db.disconnect()

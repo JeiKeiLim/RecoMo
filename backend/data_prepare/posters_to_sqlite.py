@@ -17,10 +17,10 @@ def init_db(db_path: str) -> None:
         db_path: Path to SQLite database file
     """
     conn = sqlite3.connect(db_path)
-    c = conn.cursor()
+    cursor = conn.cursor()
 
     # Create table to store poster images
-    c.execute(
+    cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS movie_posters (
             movie_id INTEGER PRIMARY KEY,
@@ -61,11 +61,11 @@ def store_poster(
                 description = f.read().strip()
 
         conn = sqlite3.connect(db_path)
-        c = conn.cursor()
+        cursor = conn.cursor()
 
-        c.execute(
-            """INSERT OR REPLACE INTO movie_posters 
-               (movie_id, movie_name, poster_data, description) 
+        cursor.execute(
+            """INSERT OR REPLACE INTO movie_posters
+               (movie_id, movie_name, poster_data, description)
                VALUES (?, ?, ?, ?)""",
             (movie_id, movie_name, poster_data, description),
         )
@@ -74,8 +74,8 @@ def store_poster(
         conn.close()
         return True
 
-    except Exception as e:
-        print(f"Error processing {poster_path}: {e}")
+    except Exception as err:  # pylint: disable=broad-exception-caught
+        print(f"Error processing {poster_path}: {err}")
         return False
 
 
@@ -113,26 +113,28 @@ if __name__ == "__main__":
 
     process_posters(POSTERS_DIR, DB_PATH)
     # Test by retrieving and displaying a random poster
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
+    main_conn = sqlite3.connect(DB_PATH)
+    main_c = main_conn.cursor()
 
     # Get random movie_id and name
-    c.execute(
+    main_c.execute(
         "SELECT movie_id, movie_name, description FROM movie_posters ORDER BY RANDOM() LIMIT 1"
     )
-    movie_id, movie_name, description = c.fetchone()
+    main_movie_id, main_movie_name, main_description = main_c.fetchone()
 
     # Get poster data
-    c.execute("SELECT poster_data FROM movie_posters WHERE movie_id = ?", (movie_id,))
-    poster_data = c.fetchone()[0]
-    conn.close()
+    main_c.execute(
+        "SELECT poster_data FROM movie_posters WHERE movie_id = ?", (main_movie_id,)
+    )
+    main_poster_data = main_c.fetchone()[0]
+    main_conn.close()
 
     # Convert to image and display
     import io
 
     from PIL import Image
 
-    image = Image.open(io.BytesIO(poster_data))
+    image = Image.open(io.BytesIO(main_poster_data))
     image.show()
-    print(f"Displayed poster for movie: {movie_name} (ID: {movie_id})")
-    print(f"Description: {description}")
+    print(f"Displayed poster for movie: {main_movie_name} (ID: {main_movie_id})")
+    print(f"Description: {main_description}")

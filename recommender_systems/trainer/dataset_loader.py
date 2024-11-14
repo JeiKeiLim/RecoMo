@@ -1,3 +1,8 @@
+"""Module to load the MovieLens 20M dataset.
+
+Author: Jongkuk Lim
+Contact: lim.jeikei@gmail.com
+"""
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
@@ -145,9 +150,9 @@ class MovieLens20MDataset:
 
 
 if __name__ == "__main__":
-    path = "~/Datasets/MovieLens20M/rating.csv"
+    PATH = "~/Datasets/MovieLens20M/rating.csv"
 
-    dataset = MovieLens20MDatasetLoader(path)
+    dataset = MovieLens20MDatasetLoader(PATH)
     train_set, test_set = dataset.get_train_test_split(test_size=0.2, shuffle_set=True)
-    data = train_set.get_user_data(train_set.user_ids[0])
+    main_data = train_set.get_user_data(train_set.user_ids[0])
     __import__("pdb").set_trace()

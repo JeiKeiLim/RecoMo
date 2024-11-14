@@ -9,11 +9,12 @@ import os
 import hydra
 import torch
 import uvicorn
-from api.fastapi_app import FastAPIApp
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from models.model_utils import model_loader
 from omegaconf import DictConfig
+
+from api.fastapi_app import FastAPIApp
+from models.model_utils import model_loader
 
 
 def create_app() -> FastAPI:
@@ -30,8 +31,8 @@ def create_app() -> FastAPI:
 
     model = model_loader(model_name, model_config, device)
 
-    app = FastAPI()
-    app.add_middleware(
+    fastapi = FastAPI()
+    fastapi.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
         allow_credentials=True,
@@ -39,8 +40,8 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     fastapi_app = FastAPIApp(rating_path=config.data.my_rating_path, model=model)
-    app.include_router(fastapi_app.router)
-    return app
+    fastapi.include_router(fastapi_app.router)
+    return fastapi
 
 
 app = create_app()
@@ -64,4 +65,4 @@ def main_app(config: DictConfig) -> None:
 
 
 if __name__ == "__main__":
-    main_app()
+    main_app()  # pylint: disable=no-value-for-parameter

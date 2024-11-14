@@ -1,8 +1,14 @@
+"""Matrix Factorization model using PyTorch.
+
+Author: Jongkuk Lim
+Contact: lim.jeikei@gmail.com
+"""
 from typing import Dict
 
 import torch
-import torch.nn as nn
+from torch import nn
 from tqdm import tqdm
+
 from trainer.dataset_loader import MovieLens20MDatasetLoader
 
 
@@ -20,8 +26,8 @@ class TorchMatrixFactorizationModel(nn.Module):
         """
         super().__init__()
 
-        self.W = nn.Embedding(n_users, k)
-        self.U = nn.Embedding(n_items, k)
+        self.w_user = nn.Embedding(n_users, k)
+        self.u_item = nn.Embedding(n_items, k)
 
         self.bias_user = nn.Parameter(torch.zeros(n_users, dtype=torch.float32))
         self.bias_item = nn.Parameter(
@@ -38,16 +44,21 @@ class TorchMatrixFactorizationModel(nn.Module):
             user_ids: Tensor of user IDs (user_ids,)
             item_ids: Tensor of item IDs (item_ids,)
         """
-        wu = torch.einsum("ij, ij -> i", self.W(user_ids), self.U(item_ids))
+        wu_result = torch.einsum(
+            "ij, ij -> i", self.w_user(user_ids), self.u_item(item_ids)
+        )
         return (
-            self.bias_user[user_ids] + self.bias_item[item_ids] + self.global_mean + wu
+            self.bias_user[user_ids]
+            + self.bias_item[item_ids]
+            + self.global_mean
+            + wu_result
         )
 
-    def train_and_predict(
+    def train_and_predict(  # pylint: disable=too-many-locals
         self,
         dataset: MovieLens20MDatasetLoader,
         epochs: int = 500,
-        lr: float = 100.0,
+        learning_rate: float = 100.0,
         save_path: str = "model.pth",
     ) -> Dict[int, float]:
         """Train the model on the given ratings and predict the missing ratings.
@@ -63,7 +74,7 @@ class TorchMatrixFactorizationModel(nn.Module):
             {item_id: predicted}
         """
         _, train_set = dataset.get_train_test_split(test_size=1.0, shuffle_set=True)
-        device = self.W.weight.device
+        device = self.w_user.weight.device
 
         train_user_ids = torch.tensor(
             train_set.data["userId"].values, device=device, dtype=torch.long
@@ -75,7 +86,7 @@ class TorchMatrixFactorizationModel(nn.Module):
             train_set.data["rating"].values, device=device, dtype=torch.float32
         )
 
-        optimizer = torch.optim.SGD(self.parameters(), lr=lr)
+        optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate)
         loss_fn = nn.MSELoss()
 
         p_bar = tqdm(range(epochs), desc="Training")
