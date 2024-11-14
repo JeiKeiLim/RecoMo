@@ -162,12 +162,13 @@ cd python_template
 # Developers
 * Please refer to [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md) guide.
 
-# Appendix
-## References
-- [MovieLens 20M Dataset](https://grouplens.org/datasets/movielens/20m/)
-- [The Movie Database (TMDb) API](https://www.themoviedb.org/documentation/api)
-- Jonathan L. Herlocker, Joseph A. Konstan, Al Borchers, and John Riedl. 1999. [An algorithmic framework for performing collaborative filtering](https://dl.acm.org/doi/10.1145/312624.312682).
-- Badrul Sarwar, George Karypis, Joseph Konstan, and John Riedl. 2001. [Item-based collaborative filtering recommendation algorithms](https://dl.acm.org/doi/10.1145/371920.372071).
-- Ruslan Salakhutdinov and Andriy Mnih. 2007. [Probabilistic matrix factorization](https://papers.nips.cc/paper/3208-probabilistic-matrix-factorization.pdf).
-- Suvash Sedhain, Aditya Krishna Menon, Scott Sanner, and Lexing Xie. 2015. [AutoRec: Autoencoders Meet Collaborative Filtering](https://dl.acm.org/doi/10.1145/2740908.2742726).
+# References
+1. [MovieLens 20M Dataset](https://grouplens.org/datasets/movielens/20m/)
+2. [The Movie Database (TMDb) API](https://www.themoviedb.org/documentation/api)
+3. [Udemy: Recommender Systems and Deep Learning in Python course](https://www.udemy.com/course/recommender-systems)
+4. [My notes and exercise codes from the course](https://github.com/JeiKeiLim/TIL/tree/main/recommender_system/RecommenderSystemsAndDeepLearningInPython)
+5. Jonathan L. Herlocker, Joseph A. Konstan, Al Borchers, and John Riedl. 1999. [An algorithmic framework for performing collaborative filtering](https://dl.acm.org/doi/10.1145/312624.312682).
+6. Badrul Sarwar, George Karypis, Joseph Konstan, and John Riedl. 2001. [Item-based collaborative filtering recommendation algorithms](https://dl.acm.org/doi/10.1145/371920.372071).
+7. Ruslan Salakhutdinov and Andriy Mnih. 2007. [Probabilistic matrix factorization](https://papers.nips.cc/paper/3208-probabilistic-matrix-factorization.pdf).
+8. Suvash Sedhain, Aditya Krishna Menon, Scott Sanner, and Lexing Xie. 2015. [AutoRec: Autoencoders Meet Collaborative Filtering](https://dl.acm.org/doi/10.1145/2740908.2742726).
 

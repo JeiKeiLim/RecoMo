@@ -6,7 +6,7 @@ This directory contains scripts for preparing movie poster data for the recommen
 
 ### grab_movie_poster.py
 
-Downloads movie poster images from TMDB API.
+Downloads movie poster images from TMDB API. This scripts takes about a day to download all the movie posters from the MovieLens20M dataset.
 
 #### Requirements
 - TMDB API key (set as environment variable `TMDB_API_KEY`)

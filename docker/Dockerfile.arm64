@@ -51,9 +51,5 @@ RUN echo "export PATH=/home/user/.local/bin:\$PATH" >> /home/user/.bashrc
 RUN echo "export LC_ALL=C.UTF-8 && export LANG=C.UTF-8" >> /home/user/.bashrc
 
 # Place your environment here
-# For PyTorch CPU
 RUN python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-# For PyTorch GPU
-# RUN python -m pip install torch torchvision torchaudio
-
 RUN python -m pip install requests pandas tqdm pillow fastapi uvicorn
