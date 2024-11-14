@@ -19,19 +19,19 @@ jobs:
       run: |
         conda info
         conda list
-    - name: [Backend] Format with black, isort
+    - name: Backend Format with black, isort
       working-directory: ./backend
       shell: bash -l {0}
       run: ./run_check.sh format
-    - name: [Backend] Lint with pylint, mypy, flake8
+    - name: Backend Lint with pylint, mypy, flake8
       working-directory: ./backend
       shell: bash -l {0}
       run: ./run_check.sh lint
-    - name: [Recommendation] Format with black, isort
+    - name: Recommendation Format with black, isort
       working-directory: ./recommender_systems
       shell: bash -l {0}
       run: ./run_check.sh format
-    - name: [Recommendation] Lint with pylint, mypy, flake8
+    - name: Recommendation Lint with pylint, mypy, flake8
       working-directory: ./recommender_systems
       shell: bash -l {0}
       run: ./run_check.sh lint
