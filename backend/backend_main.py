@@ -18,13 +18,13 @@ from omegaconf import DictConfig, OmegaConf
 
 def save_hydra_config_to_tempfile(config: DictConfig) -> None:
     """Save hydra config to temp file."""
-    temp_file_path = os.path.join(tempfile.gettempdir(), "recoman_config.yaml")
+    temp_file_path = os.path.join(tempfile.gettempdir(), "recomo_config.yaml")
     OmegaConf.save(config, temp_file_path)
 
 
 def load_temp_hydra_config() -> DictConfig:
     """Load hydra config from temp file."""
-    temp_file_path = os.path.join(tempfile.gettempdir(), "recoman_config.yaml")
+    temp_file_path = os.path.join(tempfile.gettempdir(), "recomo_config.yaml")
     if os.path.exists(temp_file_path):
         return OmegaConf.load(temp_file_path)  # type: ignore
 
