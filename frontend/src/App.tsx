@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Movie, RatingRequest, RatingResponse } from './utils/types';import './App.css';
 
-const API_BASE_URL = 'http://localhost:7777';
+const API_BASE_URL = 'http://home.limjk.ai:57777';
 
 function App() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -10,6 +10,7 @@ function App() {
   const [myRatings, setMyRatings] = useState<{ [key: number]: number }>({});
   const [predictedRatings, setPredictedRatings] = useState<{ [key: number]: number }>({});
   const [ratedMovies, setRatedMovies] = useState<Movie[]>([]);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
   const fetchRandomMovie = async () => {
     try {
@@ -153,6 +154,36 @@ function App() {
     }
   }, [currentPage]);
 
+  const handlePosterClick = (movie: Movie) => {
+    setSelectedMovie(movie);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedMovie(null);
+  };
+
+  const renderModal = () => {
+    if (!selectedMovie) return null;
+
+    return (
+      <div className="modal-overlay" onClick={handleCloseModal}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div className="modal-poster">
+            <img 
+              src={`data:image/jpeg;base64,${selectedMovie.poster}`}
+              alt={selectedMovie.name}
+            />
+          </div>
+          <div className="modal-info">
+            <h2>{selectedMovie.name}</h2>
+            <p>{selectedMovie.description}</p>
+          </div>
+          <button className="modal-close" onClick={handleCloseModal}>×</button>
+        </div>
+      </div>
+    );
+  };
+
   const renderMyRatings = () => {
     // Calculate MSE and RMSE
     const ratedMoviesWithPredictions = ratedMovies.filter(
@@ -244,7 +275,7 @@ function App() {
         <div className="movie-grid">
           {movies.map(movie => (
             <div className="movie-card">
-              <div className="movie-poster">
+              <div className="movie-poster" onClick={() => handlePosterClick(movie)}>
                 <img 
                   src={`data:image/jpeg;base64,${movie.poster}`}
                   alt={movie.name}
@@ -342,6 +373,7 @@ function App() {
           {renderContent()}
         </main>
       </div>
+      {renderModal()}
     </div>
   );
 }

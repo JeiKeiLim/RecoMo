@@ -3,6 +3,7 @@ export interface Movie {
     id: number;
     name: string;
     poster: string;
+    description: string;
     rating?: number;
     predicted_rating?: number;
   }
@@ -17,4 +18,5 @@ export interface RatingResponse {
     movie_id: number;
     rating: number;
     predicted_rating: number;
+    description?: string;
 }

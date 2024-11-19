@@ -149,6 +149,7 @@ class FastAPIApp:
 
         predicted_rating = self._clip_rating(predicted_rating)
         result = self.movie_db.get_movie_poster(movie_id)
+        description = ""
 
         if not result:
             result_random = self.movie_db.get_random_movie()
@@ -161,7 +162,12 @@ class FastAPIApp:
         else:
             name, img = result
 
-        print(f"Sending movie: {name} (ID: {movie_id}), {type(movie_id)=}")
+        description_result = self.movie_db.get_movie_description(movie_id)
+
+        if description_result:
+            description = description_result[1]
+
+        print(f"Sending movie: {name} (ID: {movie_id}), {type(movie_id)=}, {description=}")
 
         # Convert bytes to base64 string for JSON serialization
         img_b64 = base64.b64encode(img).decode("utf-8")
@@ -172,6 +178,7 @@ class FastAPIApp:
             "rating": self.ratings.get(movie_id, None),
             "predicted_rating": predicted_rating,
             "poster": img_b64,
+            "description": description,
         }
 
     async def get_movie(self, query_data: Dict) -> Dict:
@@ -193,10 +200,15 @@ class FastAPIApp:
         """
         movie_id = int(query_data["movie_id"])
         result = self.movie_db.get_movie_poster(movie_id)
+        description = ""
 
         if not result:
             return {"error": "No movie found"}
         name, img = result
+
+        description_result = self.movie_db.get_movie_description(movie_id)
+        if description_result:
+            description = description_result[1]
 
         # Convert bytes to base64 string for JSON serialization
         img_b64 = base64.b64encode(img).decode("utf-8")
@@ -211,6 +223,7 @@ class FastAPIApp:
             "rating": self.ratings.get(movie_id, None),
             "predicted_rating": predicted_rating,
             "poster": img_b64,
+            "description": description,
         }
 
     async def get_my_ratings(self, _: Dict) -> Dict:

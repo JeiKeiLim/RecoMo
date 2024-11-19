@@ -68,6 +68,32 @@ class MovieDB:
             return result[0], result[1]
         return None
 
+    def get_movie_description(self, movie_id: int) -> Optional[Tuple[str, str]]:
+        """Get movie description by movie ID.
+
+        Args:
+            movie_id: ID of the movie
+
+        Returns:
+            Tuple of (movie_name, movie_description) if found, None otherwise
+        """
+        if not self._conn:
+            self.connect()
+
+        if not self._cursor:
+            return None
+
+        self._cursor.execute(
+            "SELECT movie_name, description FROM movie_posters WHERE movie_id = ?",
+            (movie_id,),
+        )
+        result = self._cursor.fetchone()
+
+        if result:
+            return result[0], result[1]
+        return None
+
+
     def get_random_movie(self) -> Optional[Tuple[int, str, bytes]]:
         """Get a random movie from the database.
 
