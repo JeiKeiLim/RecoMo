@@ -107,7 +107,7 @@ class FastAPIApp:
         self.predictions = self.model.predict(self.ratings)
         self._sort_predictions()
 
-        return {"status": "success"}
+        return {"success": True}
 
     def get_prediction(self, query_data: Dict) -> Dict:
         """Get the prediction of the movie.

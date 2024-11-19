@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import requests
+import urllib3
 from fastapi import APIRouter
 
 from model.movie_db import MovieDB
@@ -108,10 +109,14 @@ class FastAPIApp:
             endpoint: Endpoint to post.
             data: Data to post.
         """
-        response = requests.post(  # pylint: disable=missing-timeout
-            f"{self.ENGINE_API_URL}/{endpoint}",
-            json=data,
-        )
+        try:
+            response = requests.post(  # pylint: disable=missing-timeout
+                f"{self.ENGINE_API_URL}/{endpoint}",
+                json=data,
+            )
+        except urllib3.exceptions.MaxRetryError:
+            return {}
+
         return response.json()
 
     async def get_random_movie(self, _: Dict) -> Dict:

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Movie, RatingRequest, RatingResponse } from './utils/types';import './App.css';
 
+const API_BASE_URL = 'http://localhost:7777';
+
 function App() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,7 +13,7 @@ function App() {
 
   const fetchRandomMovie = async () => {
     try {
-      const response = await fetch('http://192.168.1.23:7777/get_random_movie', {
+      const response = await fetch(`${API_BASE_URL}/get_random_movie`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,7 +55,7 @@ function App() {
 
   const submitRating = async (movieId: number, rating: number) => {
     try {
-      const response = await fetch('http://192.168.1.23:7777/submit_rating', {
+      const response = await fetch(`${API_BASE_URL}/submit_rating`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +100,7 @@ function App() {
 
   const fetchMovie = async (movieId: number): Promise<Movie | null> => {
     try {
-      const response = await fetch('http://192.168.1.23:7777/get_movie', {
+      const response = await fetch(`${API_BASE_URL}/get_movie`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +122,7 @@ function App() {
 
   const loadRatedMovies = async () => {
     try {
-      const response = await fetch('http://192.168.1.23:7777/get_my_ratings', {
+      const response = await fetch(`${API_BASE_URL}/get_my_ratings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
