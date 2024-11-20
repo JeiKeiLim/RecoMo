@@ -52,7 +52,7 @@ graph TD
 - The backend is built using FastAPI in [backend](backend) directory.
 
 ## Recommender System Engine API
-- The recommendation system engine is built using FastAPI in [recommendation_systems](recommendation_systems) directory.
+- The recommendation system engine is built using FastAPI in [recommender_systems](recommender_systems) directory.
 
 
 # How to run
