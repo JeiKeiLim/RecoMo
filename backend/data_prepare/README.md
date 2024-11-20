@@ -37,6 +37,7 @@ The script creates a SQLite database with the following table:
   - `movie_id` (INTEGER): Primary key
   - `movie_name` (TEXT): Name of the movie
   - `poster_data` (BLOB): Binary image data of the movie poster
+  - `description` (TEXT): Movie description text
 
 #### Modify the following variables in the script:
 ```python
