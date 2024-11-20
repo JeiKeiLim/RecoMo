@@ -344,7 +344,7 @@
 
 .modal-content {
   display: flex;
-  max-width: 800px;
+  max-width: 900px;
   width: 90%;
   background-color: rgba(0, 0, 0, 0.9);
   border-radius: 8px;

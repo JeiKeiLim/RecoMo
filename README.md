@@ -13,6 +13,16 @@ The project covers the following topics:
 2. Building a backend using FastAPI.
 3. Building a frontend using React.
 
+# Demo
+
+![RecoMo Demo](docs/demo.gif)
+
+- The demo shows the RecoMo web application includes the following features:
+    - Movie recommendation
+    - Movie rating
+    - Movie detail
+    - Rating history
+
 
 # Architecture
 
@@ -127,7 +137,7 @@ The model can be chosen in the [res/configs/base_config.yaml](res/configs/base_c
 - Please refer to the yaml files under [res/configs/models](res/configs/models) for the model specific configurations.
 
 
-# Features
+# Development
 ## Continuous Integration (CI)
   - Formating
   - Linting
@@ -137,8 +147,8 @@ The model can be chosen in the [res/configs/base_config.yaml](res/configs/base_c
 
 ## Docker support
 ```shell
-git clone https://github.com/j-marple-dev/python_template.git
-cd python_template
+git clone https://github.com/JeiKeiLim/RecoMo.git
+cd RecoMo
 ./run_docker.sh build
 # You can add build options
 # ./run_docker.sh build --no-cache
@@ -149,14 +159,6 @@ cd python_template
 
 # Re-run last docker container
 ./run_docker.sh exec
-```
-
-# Setting environment
-```shell
-git clone https://github.com/j-marple-dev/python_template.git
-cd python_template
-./run_check.sh init_conda
-./run_check.sh init_precommit  # Developer only
 ```
 
 # Developers

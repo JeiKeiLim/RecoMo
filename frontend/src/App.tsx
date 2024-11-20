@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Movie, RatingRequest, RatingResponse } from './utils/types';import './App.css';
 
-const API_BASE_URL = 'http://home.limjk.ai:57777';
+const API_BASE_URL = 'http://localhost:7777';
 
 function App() {
   const [movies, setMovies] = useState<Movie[]>([]);
